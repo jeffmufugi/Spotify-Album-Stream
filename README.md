@@ -1,4 +1,4 @@
-DEPLOYED USING AWS AMPLIFY - ACCESS AT: http://3.144.97.232/ (if not accessible email me @ mufugi.michelo@gmail.com, for access)
+DEPLOYED USING AWS EC2 - ACCESS AT: http://3.144.97.232/ (if not accessible email me @ mufugi.michelo@gmail.com, for access)
 VIEW TOP MUSIC & SEARCH FOR ARTISTS/ALBUMS AND VIEW TOTAL STREAMS. BELOW ARE IMAGES OF THE INTERFACE
 <img width="500" alt="Screenshot 2025-02-18 at 10 52 40 PM" src="https://github.com/user-attachments/assets/150b2041-8fa3-4e3d-b8b1-763d1b044cca" />
 <img width="500" alt="Screenshot 2025-02-18 at 10 53 07 PM" src="https://github.com/user-attachments/assets/0db62ea8-f769-469c-848b-f25cfecd10ea" />
