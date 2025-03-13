@@ -3,11 +3,11 @@ const cors = require("cors");
 const axios = require("axios");
 
 
-const key = 'f6c6c2ae87msh8b531cf9ca6ff59p1df0b8jsn0cf3a71c43c8'
+const key = 'a81ccad081msh41f4642cf1ef463p1c9ec9jsn4516e909bc8f'
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:5173'], // Allow your frontend origin
+    origin: ['http://localhost:5173','http://3.144.97.232'], // Allow your frontend origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
   }));
@@ -19,10 +19,10 @@ app.get("/api/search", async (req, res) => {
     url: "https://spotify23.p.rapidapi.com/search/",
     params: {
       q: query,
-      type: "artists",
+      type: "albums, artists",
       offset: "0",
-      limit: "10",
-      numberOfTopResults: "10",
+      limit: "20",
+      numberOfTopResults: "20",
     },
     headers: {
         'x-rapidapi-key': key,
@@ -98,6 +98,40 @@ try {
 }
 
 });
+//discography
+// app.get("/api/discography", async (req, res) => {
+//   const artistId = req.query.id; // Extract artist ID from query parameter
+//   if (!artistId) {
+//     return res.status(400).json({ error: "Artist ID is required" });
+//   }
+
+//   const options = {
+//     method: 'GET',
+//     url: 'https://spotify23.p.rapidapi.com/artist_overview/',
+//     params: {
+//       id: artistId,
+
+
+//     },
+//     headers: {
+//       'x-rapidapi-key': key,
+//       'x-rapidapi-host': 'spotify23.p.rapidapi.com'
+//     }
+//   };
+
+// try {
+//   const response = await axios.request(options);
+//   console.log(response.data);
+//   res.json(response.data); // Send the API response to the frontend
+  
+// } catch (error) {
+//   console.error(error);
+// }
+
+// });
+
+
+
 
 // NEW MUSIC
 app.get("/api/newmusic", async (req, res) => {
@@ -249,6 +283,6 @@ try {
 
 });
 
-app.listen(4000, () => {
-  console.log("Server running on http://localhost:4000");
+app.listen(4000,'0.0.0.0', () => {
+  console.log("Server running");
 });

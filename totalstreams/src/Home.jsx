@@ -1,180 +1,151 @@
-import { useState,useEffect,useRef } from "react";
 import React from "react";
 import MenuBar from "./Menu";
-import ap from "./assets/art.svg";
-import yt from "./assets/yt.svg";
 import sp from "./assets/sp.svg";
-import app from "./assets/ap.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ClimbingBoxLoader from "react-spinners/HashLoader";
+import { useQuery } from "@tanstack/react-query";
 
-export default function HomePage(){
+// Fetch Functions
+const fetchTopAlbums = async () => {
+ // const response = await axios.get(`http://localhost:4000/api/topalbums`,'http://3.144.97.232/api/topalbums');
+  const response = await axios.get('http://3.144.97.232/api/topalbums');
+  return response.data.items.map((item) => ({
+    id: item.track.album.id,
+    name: item.track.album.name,
+    image: item.track.album.images[0].url,
+  }));
+};
 
-  const [topAlbums, setTopAlbums] = useState([]);
-  const [topSongs, setTopSongs] = useState([]);
-  const [newMusic, setNewMusic] = useState([]);
+const fetchTopSongs = async () => {
+  //const response = await axios.get(`http://localhost:4000/api/topsongs`);
+  const response = await axios.get(`http://3.144.97.232/api/topsongs`);
+  return response.data.items.map((item) => ({
+    id: item.track.id, // Changed from item.track.album.id to item.track.id
+    albumId: item.track.album.id,
+    name: item.track.name,
+    image: item.track.album.images[0].url,
+  }));
+};
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const fetchTopAlbums = async () => {
-    try{
-      const response = await axios.get(
-        `http://localhost:4000/api/topalbums`
-      );
-      const data = response.data.items.map((item) => ({
-        id: item.track.album.id,
-        name: item.track.album.name,
-        image: item.track.album.images[0].url 
-      }));
-
-    setTopAlbums(data);
-    } catch(error){
-      console.error(error);
-    }         
-  }
-
-
-  const fetchTopSongs = async () => {
-    try{
-      const response = await axios.get(
-        `http://localhost:4000/api/topsongs`
-      );
-      const data = response.data.items.map((item)=>({
-        id: item.track.album.id,
+const fetchNewMusic = async () => {
+  //const response = await axios.get("http://localhost:4000/api/newmusic");
+  const response = await axios.get(`http://3.144.97.232/api/newmusic`);
+  return (
+    response.data.items
+      ?.filter((item) => item.track && item.track.album)
+      .map((item) => ({
+        id: item.track.id, // Changed from item.track.album.id to item.track.id
+        albumId: item.track.album.id,
         name: item.track.name,
-        image: item.track.album.images[0].url
-        
-      }));
-
-      setTopSongs(data);
-    } catch(error){
-      console.error(error);
-    }
+        image: item.track.album.images?.[0]?.url || "default-image-url",
+      })) || []
+  );
+};
 
 
-  }
+// Component
+export default function HomePage() {
+  const navigate = useNavigate();
 
-  const fetchNewMusic = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/api/newmusic");
+  // React Query for fetching data
+  const { data: topAlbums, isLoading: albumsLoading } = useQuery({
+    queryKey: ["topAlbums"],
+    queryFn: fetchTopAlbums,
+  });
   
-      const data = response.data.items
-        ?.filter((item) => item.track && item.track.album) // Ensure track and album exist
-        .map((item) => ({
-          id: item.track.album.id,
-          name: item.track.name,
-          image: item.track.album.images?.[0]?.url || "default-image-url",
-        })) || [];
+  const { data: topSongs, isLoading: songsLoading } = useQuery({
+    queryKey: ["topSongs"],
+    queryFn: fetchTopSongs,
+  });
   
-      setNewMusic(data);
-    } catch (error) {
-      console.error("Error fetching new music:", error);
-    }
-  };
+  const { data: newMusic, isLoading: newMusicLoading } = useQuery({
+    queryKey: ["newMusic"],
+    queryFn: fetchNewMusic,
+  });
   
-
-  useEffect(() => {
-    fetchTopAlbums();
-    fetchTopSongs();
-    fetchNewMusic();
-  }, []);
 
   const handleAlbumClick = (albumId) => {
     navigate(`/album?id=${albumId}`);
-    
   };
 
-  if (topAlbums.length === 0 || topSongs.length === 0 || newMusic.length === 0) {
-    return   <div style={{backgroundColor:"#f2f2f2",height:"100%",width:"100vw",display:"flex",justifyContent:"center",alignItems:"center",zIndex:"100",position:"absolute"}}>
-    <ClimbingBoxLoader
-      color="#464646"
-      size={60}
-      loading
-      speedMultiplier={1}
-    />
-    </div>;
+  // Handle loading state
+  if (albumsLoading || songsLoading || newMusicLoading) {
+    return (
+      <div
+        style={{
+          backgroundColor: "#f2f2f2",
+          height: "100%",
+          width: "100vw",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: "100",
+          position: "absolute",
+        }}
+      >
+        <ClimbingBoxLoader color="#464646" size={60} loading speedMultiplier={1} />
+      </div>
+    );
   }
 
-    return(<>
-    <div className="homepage">
+  return (
+    <>
+      <div className="homepage">
         <div className="main-contents-home">
-            <div className="top-homepage">
-                <div className="title-hp">
-                    <h1>NEW POPULAR SONGS</h1>
-                    <div className="select-count-options">
-          
-          <img src={sp} alt="" />
- 
-      </div>
-                </div>
-                <div className="main-hp">
-                {newMusic.map((song)=>(
-  <div className="alb-list" onClick={() => handleAlbumClick(song.id)}>
-  <div className="alb-img">
-    <img src={song.image} />
-  </div>
-  <div className="alb-name">{song.name}</div>
-
-</div>
-
-))}
-</div>
+          <div className="top-homepage">
+            <div className="title-hp">
+              <h1>NEW POPULAR SONGS</h1>
+              <div className="select-count-options">
+                <img src={sp} alt="" />
+              </div>
             </div>
-
-<div className="bottom-homepage">
-          <div className="title-hp">
-                <h1>TOP ALBUMS</h1>
-  
+            <div className="main-hp">
+              {newMusic.map((song) => (
+                <div key={`newMusic-${song.id}`} className="alb-list" onClick={() => handleAlbumClick(song.albumId)}>
+                  <div className="alb-img">
+                    <img src={song.image} />
+                  </div>
+                  <div className="alb-name">{song.name}</div>
                 </div>
-
-                
-  <div className="main-hp">
-
-{topAlbums.map((album) => (
-    <div className="artist-list" onClick={() => handleAlbumClick(album.id)}>
-    <div className="artist-img">
-      <img src={album.image}/>
-    </div>
-    <div className="artist-name">{album.name}</div>
-  </div>
-))}
-
-
-</div>
-            
+              ))}
             </div>
-            
+          </div>
+
+          <div className="bottom-homepage">
+            <div className="title-hp">
+              <h1>TOP ALBUMS</h1>
+            </div>
+            <div className="main-hp">
+              {topAlbums.map((album) => (
+                <div key={`album-${album.id}`} className="artist-list" onClick={() => handleAlbumClick(album.id)}>
+                  <div className="artist-img">
+                    <img src={album.image} />
+                  </div>
+                  <div className="artist-name">{album.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bottom-homepage">
+            <div className="title-hp">
+              <h1>TOP SONGS</h1>
+            </div>
+            <div className="main-hp">
+              {topSongs.map((song) => (
+                <div key={`topSong-${song.id}`} className="artist-list" onClick={() => handleAlbumClick(song.albumId)}>
+                  <div className="artist-img">
+                    <img src={song.image} />
+                  </div>
+                  <div className="artist-name">{song.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-
-        <div className="bottom-homepage">
-          <div className="title-hp">
-                <h1>TOP SONGS</h1>
-                <div className="select-count-options">
-            
-
-
-            </div>
-                </div>
-
-                
-  <div className="main-hp">
-
-{topSongs.map((album) => (
-    <div className="artist-list" onClick={() => handleAlbumClick(album.id)}>
-    <div className="artist-img">
-      <img src={album.image}/>
-    </div>
-    <div className="artist-name">{album.name}</div>
-  </div>
-))}
-
-
-</div>
-            
-            </div>
-    <MenuBar/>
-    </div>
-    
-    </>)
+        <MenuBar />
+      </div>
+    </>
+  );
 }
